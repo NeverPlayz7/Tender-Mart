@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OASIS | The Global Archive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --accent: #c5a37d; --bg: #fafafa; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Montserrat', sans-serif; cursor: none; }
+        body { background: var(--bg); color: #111; overflow-x: hidden; }
+        .font-serif { font-family: 'Bodoni Moda', serif; }
+
+        /* Custom Cursor */
+        #cursor { width: 10px; height: 10px; background: black; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; mix-blend-mode: difference; transition: transform 0.1s; }
+
+        /* Animated Sale Wallpaper */
+        .sale-wallpaper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; background: #fdfcfb; overflow: hidden; pointer-events: none;
+        }
+        .sale-text {
+            position: absolute; top: 50%; left: 0; font-size: 15vh; font-family: 'Bodoni Moda'; 
+            font-style: italic; color: rgba(0,0,0,0.02); white-space: nowrap;
+            animation: marquee 30s linear infinite; transform: translateY(-50%) rotate(-10deg);
+        }
+        @keyframes marquee { from { transform: translateY(-50%) rotate(-10deg) translateX(0); } to { transform: translateY(-50%) rotate(-10deg) translateX(-50%); } }
+
+        /* Sidebars */
+        .sidebar {
+            position: fixed; top: 0; right: 0; height: 100vh; width: 450px; max-width: 100%;
+            background: white; transform: translateX(100%); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000; box-shadow: -20px 0 50px rgba(0,0,0,0.05);
+        }
+        .sidebar.active { transform: translateX(0); }
+
+        /* Product Cards */
+        .product-card { position: relative; transition: 0.5s; }
+        .img-box { position: relative; overflow: hidden; background: #eee; aspect-ratio: 3/4; }
+        .product-card img { width: 100%; height: 100%; object-fit: cover; transition: 1.5s cubic-bezier(0.16, 1, 0.3, 1); filter: grayscale(20%); }
+        .product-card:hover img { transform: scale(1.08); filter: grayscale(0%); }
+
+        .badge { position: absolute; top: -5px; right: -8px; background: black; color: white; font-size: 8px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 1s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            * { cursor: auto !important; }
+            #cursor { display: none; }
+            .grid-cols-3 { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+
+    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="snd-cart" src="https://assets.mixkit.co/active_storage/sfx/607/607-preview.mp3"></audio>
+
+    <div class="sale-wallpaper">
+        <div class="sale-text">WORLDWIDE ARCHIVE SALE — 40% OFF — PREMIUM SELECTIONS — LIMITED EDITION</div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl h-20 border-b border-gray-100 px-6 md:px-16 flex justify-between items-center">
+        <div class="text-2xl font-serif italic font-black tracking-tighter">Oasis.</div>
+        
+        <div class="hidden md:flex flex-1 mx-20 relative">
+            <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search Archive..." class="w-full bg-black/5 rounded-full px-6 py-2 text-xs outline-none focus:bg-black/10 transition">
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="relative cursor-pointer hover:opacity-50 transition" onclick="toggleSidebar('wishlistSidebar')">
+                <i class="fa-regular fa-heart"></i><span id="wishCount" class="badge">0</span>
+            </div>
+            <div class="relative cursor-pointer hover:opacity-50 transition" onclick="toggleSidebar('cartSidebar')">
+                <i class="fa-solid fa-bag-shopping"></i><span id="cartCount" class="badge">0</span>
+            </div>
+            <div class="text-[10px] font-bold uppercase tracking-widest hidden md:block">Login</div>
+        </div>
+    </nav>
+
+    <header class="pt-40 pb-20 text-center px-4">
+        <h1 class="text-6xl md:text-[9rem] font-serif italic mb-6 fade-in">The Collection</h1>
+        <div class="flex flex-wrap justify-center gap-4 text-[9px] font-bold tracking-[3px] uppercase">
+            <button onclick="filterCategory('All')" class="px-6 py-2 border border-black rounded-full hover:bg-black hover:text-white transition">All</button>
+            <button onclick="filterCategory('Electronics')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Electronics</button>
+            <button onclick="filterCategory('Fashion')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Fashion</button>
+            <button onclick="filterCategory('Luxury')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Luxury</button>
+            <select id="priceSort" onchange="sortItems()" class="bg-transparent outline-none">
+                <option value="default">Sort: Recommended</option>
+                <option value="low">Price: Low to High</option>
+                <option value="high">Price: High to Low</option>
+            </select>
+        </div>
+    </header>
+
+    <main class="max-w-[1800px] mx-auto px-4 md:px-12 pb-20">
+        <div id="productGrid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-10">
+            </div>
+    </main>
+
+    <div id="cartSidebar" class="sidebar p-8 flex flex-col">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-4xl font-serif italic">Bag</h2>
+            <button onclick="toggleSidebar('cartSidebar')" class="text-2xl">&times;</button>
+        </div>
+        <div id="cartItems" class="flex-1 space-y-6 overflow-y-auto pr-2"></div>
+        <div class="pt-8 border-t">
+            <div class="flex justify-between text-2xl font-serif italic mb-6">
+                <span>Total</span><span id="cartTotal">$0</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[4px] hover:bg-zinc-800">Complete Purchase</button>
+        </div>
+    </div>
+
+    <div id="wishlistSidebar" class="sidebar p-8 flex flex-col">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-4xl font-serif italic">Wishlist</h2>
+            <button onclick="toggleSidebar('wishlistSidebar')" class="text-2xl">&times;</button>
+        </div>
+        <div id="wishlistItems" class="flex-1 space-y-6 overflow-y-auto"></div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Studio Headphones", price: 199, category: "Electronics", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600" },
+            { id: 2, name: "Luxury Watch", price: 850, category: "Luxury", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" },
+            { id: 3, name: "Silk Linen Shirt", price: 120, category: "Fashion", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600" },
+            { id: 4, name: "Smart Series 7", price: 399, category: "Electronics", img: "https://images.unsplash.com/photo-1546868871-70c122469d8b?w=600" },
+            { id: 5, name: "Noir Sunglasses", price: 250, category: "Fashion", img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600" },
+            { id: 6, name: "Premium Fragrance", price: 180, category: "Luxury", img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600" },
+            { id: 7, name: "Leather Tote Bag", price: 420, category: "Fashion", img: "https://images.unsplash.com/photo-1584917033904-491bb74000bc?w=600" },
+            { id: 8, name: "Wireless Aura Pods", price: 150, category: "Electronics", img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600" }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('oasis_cart')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('oasis_wishlist')) || [];
+
+        function init() {
+            renderGrid(products);
+            updateUI();
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = data.map(p => {
+                const isLiked = wishlist.some(x => x.id === p.id);
+                return `
+                <div class="product-card fade-in">
+                    <div class="img-box rounded-sm">
+                        <img src="${p.img}" alt="${p.name}">
+                        <button onclick="toggleWish(${p.id})" class="absolute top-4 right-4 text-white drop-shadow-md hover:scale-125 transition">
+                            <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart ${isLiked ? 'text-red-500' : ''}"></i>
+                        </button>
+                        <button onclick="addToCart(${p.id})" class="absolute bottom-0 w-full bg-white/90 text-black py-3 text-[8px] font-bold uppercase tracking-[3px] opacity-0 translate-y-full hover:bg-black hover:text-white transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">Add To Bag</button>
+                    </div>
+                    <div class="mt-4 text-center group cursor-pointer" onclick="addToCart(${p.id})">
+                        <h4 class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">${p.name}</h4>
+                        <b class="text-lg font-serif italic">$${p.price}</b>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // --- CORE LOGIC ---
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const exists = cart.find(x => x.id === id);
+            if(exists) exists.qty++;
+            else cart.push({...product, qty: 1});
+            
+            playSound('snd-cart');
+            updateUI();
+            saveData();
+            if(window.innerWidth > 768) toggleSidebar('cartSidebar', true);
+        }
+
+        function toggleWish(id) {
+            const idx = wishlist.findIndex(x => x.id === id);
+            if(idx > -1) wishlist.splice(idx, 1);
+            else {
+                wishlist.push(products.find(p => p.id === id));
+                playSound('snd-click');
+            }
+            updateUI();
+            renderGrid(products);
+            saveData();
+        }
+
+        function updateUI() {
+            // Cart Counter
+            document.getElementById('cartCount').innerText = cart.reduce((a,b) => a + b.qty, 0);
+            document.getElementById('wishCount').innerText = wishlist.length;
+
+            // Cart Items
+            const cartList = document.getElementById('cartItems');
+            cartList.innerHTML = cart.map((item, i) => `
+                <div class="flex gap-4 items-center animate-fade">
+                    <img src="${item.img}" class="w-20 h-24 object-cover">
+                    <div class="flex-1">
+                        <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
+                        <p class="font-serif italic text-sm">$${item.price}</p>
+                        <div class="flex items-center gap-4 mt-2">
+                            <button onclick="updateQty(${i}, -1)" class="text-lg">–</button>
+                            <span class="text-xs font-bold">${item.qty}</span>
+                            <button onclick="updateQty(${i}, 1)" class="text-lg">+</button>
+                        </div>
+                    </div>
+                    <button onclick="removeItem(${i})" class="text-gray-400">&times;</button>
+                </div>
+            `).join('');
+
+            // Wishlist Items
+            const wishList = document.getElementById('wishlistItems');
+            wishList.innerHTML = wishlist.map((item, i) => `
+                <div class="flex gap-4 items-center">
+                    <img src="${item.img}" class="w-16 h-20 object-cover">
+                    <div class="flex-1">
+                        <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
+                        <button onclick="addToCart(${item.id})" class="text-[8px] font-bold underline uppercase tracking-widest mt-1">Move to Bag</button>
+                    </div>
+                    <button onclick="toggleWish(${item.id})" class="text-gray-400">&times;</button>
+                </div>
+            `).join('');
+
+            document.getElementById('cartTotal').innerText = "$" + cart.reduce((a,b) => a + (b.price * b.qty), 0);
+        }
+
+        // --- UTILS ---
+        function updateQty(index, delta) {
+            cart[index].qty += delta;
+            if(cart[index].qty < 1) cart.splice(index, 1);
+            updateUI();
+            saveData();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateUI();
+            saveData();
+        }
+
+        function toggleSidebar(id, forceOpen = null) {
+            const el = document.getElementById(id);
+            if(forceOpen === true) el.classList.add('active');
+            else el.classList.toggle('active');
+        }
+
+        function filterCategory(cat) {
+            const filtered = cat === 'All' ? products : products.filter(p => p.category === cat);
+            renderGrid(filtered);
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            renderGrid(filtered);
+        }
+
+        function sortItems() {
+            const val = document.getElementById('priceSort').value;
+            let sorted = [...products];
+            if(val === 'low') sorted.sort((a,b) => a.price - b.price);
+            if(val === 'high') sorted.sort((a,b) => b.price - a.price);
+            renderGrid(sorted);
+        }
+
+        function playSound(id) {
+            const s = document.getElementById(id);
+            s.currentTime = 0; s.play();
+        }
+
+        function saveData() {
+            localStorage.setItem('oasis_cart', JSON.stringify(cart));
+            localStorage.setItem('oasis_wishlist', JSON.stringify(wishlist));
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("Archive is empty.");
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#000', '#c5a37d'] });
+            alert("Order Acquired. Your archive selection is being prepared.");
+            cart = [];
+            updateUI();
+            saveData();
+            toggleSidebar('cartSidebar');
+        }
+
+        // Cursor Movement
+        document.addEventListener('mousemove', e => {
+            const cursor = document.getElementById('cursor');
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        init();
+    </script>
+</body>
+</html>
