@@ -2,302 +2,250 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OASIS | The Global Archive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TENDER MART | Luxury Retail</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 
     <style>
-        :root { --accent: #c5a37d; --bg: #fafafa; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Montserrat', sans-serif; cursor: none; }
-        body { background: var(--bg); color: #111; overflow-x: hidden; }
-        .font-serif { font-family: 'Bodoni Moda', serif; }
+        :root { --tm-gold: #D4AF37; --tm-dark: #0A0A0A; --tm-white: #FFFFFF; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Plus Jakarta Sans', sans-serif; cursor: none; }
+        body { background: #fafafa; color: var(--tm-dark); overflow-x: hidden; }
+        .font-serif { font-family: 'Playfair Display', serif; }
 
         /* Custom Cursor */
-        #cursor { width: 10px; height: 10px; background: black; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; mix-blend-mode: difference; transition: transform 0.1s; }
+        #cursor { width: 8px; height: 8px; background: var(--tm-dark); border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; transition: transform 0.1s ease-out; }
+        #cursor-follower { width: 30px; height: 30px; border: 1px solid rgba(0,0,0,0.1); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.2s ease-out; }
 
-        /* Animated Sale Wallpaper */
-        .sale-wallpaper {
+        /* 📢 Animated Background (The "Sale" Aura) */
+        .sale-aura {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; background: #fdfcfb; overflow: hidden; pointer-events: none;
+            z-index: -1; pointer-events: none;
         }
-        .sale-text {
-            position: absolute; top: 50%; left: 0; font-size: 15vh; font-family: 'Bodoni Moda'; 
-            font-style: italic; color: rgba(0,0,0,0.02); white-space: nowrap;
-            animation: marquee 30s linear infinite; transform: translateY(-50%) rotate(-10deg);
+        .aura-text {
+            position: absolute; top: 50%; left: -20%; font-size: 25vh; font-weight: 800;
+            color: rgba(0,0,0,0.015); white-space: nowrap;
+            animation: marquee 40s linear infinite; text-transform: uppercase;
         }
-        @keyframes marquee { from { transform: translateY(-50%) rotate(-10deg) translateX(0); } to { transform: translateY(-50%) rotate(-10deg) translateX(-50%); } }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
         /* Sidebars */
         .sidebar {
-            position: fixed; top: 0; right: 0; height: 100vh; width: 450px; max-width: 100%;
+            position: fixed; top: 0; right: 0; height: 100vh; width: 420px; max-width: 100%;
             background: white; transform: translateX(100%); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 2000; box-shadow: -20px 0 50px rgba(0,0,0,0.05);
+            z-index: 2000; box-shadow: -20px 0 60px rgba(0,0,0,0.08);
         }
         .sidebar.active { transform: translateX(0); }
 
-        /* Product Cards */
-        .product-card { position: relative; transition: 0.5s; }
-        .img-box { position: relative; overflow: hidden; background: #eee; aspect-ratio: 3/4; }
-        .product-card img { width: 100%; height: 100%; object-fit: cover; transition: 1.5s cubic-bezier(0.16, 1, 0.3, 1); filter: grayscale(20%); }
-        .product-card:hover img { transform: scale(1.08); filter: grayscale(0%); }
+        /* Premium Product Cards */
+        .product-card { position: relative; background: white; padding: 10px; transition: 0.4s; }
+        .img-container { position: relative; overflow: hidden; aspect-ratio: 1/1.2; background: #f1f1f1; }
+        .product-card img { width: 100%; height: 100%; object-fit: cover; transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .product-card:hover img { transform: scale(1.1); filter: contrast(1.1); }
 
-        .badge { position: absolute; top: -5px; right: -8px; background: black; color: white; font-size: 8px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        /* Animations */
-        .fade-in { animation: fadeIn 1s forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Floating Badge */
+        .count-badge { position: absolute; top: -8px; right: -8px; background: black; color: white; font-size: 9px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 2px solid white; }
 
         @media (max-width: 768px) {
+            #cursor, #cursor-follower { display: none; }
             * { cursor: auto !important; }
-            #cursor { display: none; }
-            .grid-cols-3 { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
-            .sidebar { width: 100%; }
+            .grid-3 { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
         }
     </style>
 </head>
 <body>
 
     <div id="cursor"></div>
+    <div id="cursor-follower"></div>
 
-    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
-    <audio id="snd-cart" src="https://assets.mixkit.co/active_storage/sfx/607/607-preview.mp3"></audio>
-
-    <div class="sale-wallpaper">
-        <div class="sale-text">WORLDWIDE ARCHIVE SALE — 40% OFF — PREMIUM SELECTIONS — LIMITED EDITION</div>
+    <div class="sale-aura">
+        <div class="aura-text">TENDER MART SALE — QUALITY REDEFINED — TENDER MART SALE — QUALITY REDEFINED —</div>
     </div>
 
-    <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl h-20 border-b border-gray-100 px-6 md:px-16 flex justify-between items-center">
-        <div class="text-2xl font-serif italic font-black tracking-tighter">Oasis.</div>
+    <audio id="snd-cart" src="https://assets.mixkit.co/active_storage/sfx/607/607-preview.mp3"></audio>
+    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md h-20 px-6 md:px-20 flex justify-between items-center border-b border-gray-100">
+        <div class="text-3xl font-serif font-bold tracking-tighter">Tender<span class="text-gray-400 font-light italic">Mart.</span></div>
         
-        <div class="hidden md:flex flex-1 mx-20 relative">
-            <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search Archive..." class="w-full bg-black/5 rounded-full px-6 py-2 text-xs outline-none focus:bg-black/10 transition">
+        <div class="hidden md:flex flex-1 mx-24 relative">
+            <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search Collection..." class="w-full bg-gray-50 border border-gray-100 rounded-full px-6 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-black/5 transition">
         </div>
 
-        <div class="flex items-center gap-6">
-            <div class="relative cursor-pointer hover:opacity-50 transition" onclick="toggleSidebar('wishlistSidebar')">
-                <i class="fa-regular fa-heart"></i><span id="wishCount" class="badge">0</span>
+        <div class="flex items-center gap-8">
+            <div class="relative cursor-pointer group" onclick="toggleSidebar('wishlistPanel')">
+                <i class="fa-regular fa-heart text-xl"></i><span id="wishCount" class="count-badge">0</span>
             </div>
-            <div class="relative cursor-pointer hover:opacity-50 transition" onclick="toggleSidebar('cartSidebar')">
-                <i class="fa-solid fa-bag-shopping"></i><span id="cartCount" class="badge">0</span>
+            <div class="relative cursor-pointer group" onclick="toggleSidebar('cartPanel')">
+                <i class="fa-solid fa-cart-shopping text-xl"></i><span id="cartCount" class="count-badge">0</span>
             </div>
-            <div class="text-[10px] font-bold uppercase tracking-widest hidden md:block">Login</div>
         </div>
     </nav>
 
-    <header class="pt-40 pb-20 text-center px-4">
-        <h1 class="text-6xl md:text-[9rem] font-serif italic mb-6 fade-in">The Collection</h1>
-        <div class="flex flex-wrap justify-center gap-4 text-[9px] font-bold tracking-[3px] uppercase">
-            <button onclick="filterCategory('All')" class="px-6 py-2 border border-black rounded-full hover:bg-black hover:text-white transition">All</button>
-            <button onclick="filterCategory('Electronics')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Electronics</button>
-            <button onclick="filterCategory('Fashion')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Fashion</button>
-            <button onclick="filterCategory('Luxury')" class="px-6 py-2 border border-black/10 rounded-full hover:border-black transition">Luxury</button>
-            <select id="priceSort" onchange="sortItems()" class="bg-transparent outline-none">
-                <option value="default">Sort: Recommended</option>
-                <option value="low">Price: Low to High</option>
-                <option value="high">Price: High to Low</option>
-            </select>
+    <section class="pt-48 pb-12 text-center">
+        <h2 class="text-[10px] tracking-[6px] uppercase font-extrabold text-gray-400 mb-4">Curated Selection 2026</h2>
+        <h1 class="text-5xl md:text-8xl font-serif italic mb-8">Modern Essentials</h1>
+        <div class="flex justify-center gap-6 overflow-x-auto px-4 pb-4 no-scrollbar">
+            <button onclick="filterCat('All')" class="px-8 py-2.5 bg-black text-white rounded-full text-[10px] uppercase font-bold tracking-widest">All Items</button>
+            <button onclick="filterCat('Tech')" class="px-8 py-2.5 bg-white border border-gray-100 rounded-full text-[10px] uppercase font-bold tracking-widest hover:border-black transition">Technology</button>
+            <button onclick="filterCat('Vogue')" class="px-8 py-2.5 bg-white border border-gray-100 rounded-full text-[10px] uppercase font-bold tracking-widest hover:border-black transition">Vogue</button>
+            <button onclick="filterCat('Luxe')" class="px-8 py-2.5 bg-white border border-gray-100 rounded-full text-[10px] uppercase font-bold tracking-widest hover:border-black transition">Luxury</button>
         </div>
-    </header>
+    </section>
 
-    <main class="max-w-[1800px] mx-auto px-4 md:px-12 pb-20">
-        <div id="productGrid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-10">
+    <main class="max-w-[1600px] mx-auto px-4 md:px-12 mb-32">
+        <div id="productGrid" class="grid grid-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-10">
             </div>
     </main>
 
-    <div id="cartSidebar" class="sidebar p-8 flex flex-col">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-4xl font-serif italic">Bag</h2>
-            <button onclick="toggleSidebar('cartSidebar')" class="text-2xl">&times;</button>
+    <div id="cartPanel" class="sidebar p-10 flex flex-col">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-4xl font-serif italic">Your Bag</h2>
+            <button onclick="toggleSidebar('cartPanel')" class="text-3xl">&times;</button>
         </div>
-        <div id="cartItems" class="flex-1 space-y-6 overflow-y-auto pr-2"></div>
-        <div class="pt-8 border-t">
-            <div class="flex justify-between text-2xl font-serif italic mb-6">
-                <span>Total</span><span id="cartTotal">$0</span>
-            </div>
-            <button onclick="checkout()" class="w-full bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[4px] hover:bg-zinc-800">Complete Purchase</button>
+        <div id="cartList" class="flex-1 space-y-8 overflow-y-auto pr-4"></div>
+        <div class="pt-10 border-t mt-auto">
+            <div class="flex justify-between text-2xl font-serif mb-8"><span>Total</span><span id="cartTotal">$0</span></div>
+            <button onclick="checkout()" class="w-full bg-black text-white py-5 rounded-sm text-[10px] font-bold uppercase tracking-[4px] hover:bg-zinc-800 transition">Place Order</button>
         </div>
     </div>
 
-    <div id="wishlistSidebar" class="sidebar p-8 flex flex-col">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-4xl font-serif italic">Wishlist</h2>
-            <button onclick="toggleSidebar('wishlistSidebar')" class="text-2xl">&times;</button>
+    <div id="wishlistPanel" class="sidebar p-10">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-4xl font-serif italic">Saved Items</h2>
+            <button onclick="toggleSidebar('wishlistPanel')" class="text-3xl">&times;</button>
         </div>
-        <div id="wishlistItems" class="flex-1 space-y-6 overflow-y-auto"></div>
+        <div id="wishList" class="space-y-8"></div>
     </div>
 
     <script>
-        const products = [
-            { id: 1, name: "Studio Headphones", price: 199, category: "Electronics", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600" },
-            { id: 2, name: "Luxury Watch", price: 850, category: "Luxury", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" },
-            { id: 3, name: "Silk Linen Shirt", price: 120, category: "Fashion", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600" },
-            { id: 4, name: "Smart Series 7", price: 399, category: "Electronics", img: "https://images.unsplash.com/photo-1546868871-70c122469d8b?w=600" },
-            { id: 5, name: "Noir Sunglasses", price: 250, category: "Fashion", img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600" },
-            { id: 6, name: "Premium Fragrance", price: 180, category: "Luxury", img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600" },
-            { id: 7, name: "Leather Tote Bag", price: 420, category: "Fashion", img: "https://images.unsplash.com/photo-1584917033904-491bb74000bc?w=600" },
-            { id: 8, name: "Wireless Aura Pods", price: 150, category: "Electronics", img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600" }
+        const PRODUCTS = [
+            { id: 1, name: "Air-Pro Headphones", price: 299, category: "Tech", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800" },
+            { id: 2, name: "Classic Gold Chrono", price: 1200, category: "Luxe", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800" },
+            { id: 3, name: "Minimalist Linen", price: 85, category: "Vogue", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800" },
+            { id: 4, name: "Series X Smart", price: 450, category: "Tech", img: "https://images.unsplash.com/photo-1546868871-70c122469d8b?w=800" },
+            { id: 5, name: "Private Blend Oud", price: 210, category: "Luxe", img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800" },
+            { id: 6, name: "Desert Suede Boot", price: 320, category: "Vogue", img: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=800" },
+            { id: 7, name: "Onyx Sunglasses", price: 195, category: "Luxe", img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800" },
+            { id: 8, name: "Tech Backpack", price: 140, category: "Tech", img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800" },
+            { id: 9, name: "Cashmere Scarf", price: 110, category: "Vogue", img: "https://images.unsplash.com/photo-1605763240000-7e93b172d754?w=800" }
         ];
 
-        let cart = JSON.parse(localStorage.getItem('oasis_cart')) || [];
-        let wishlist = JSON.parse(localStorage.getItem('oasis_wishlist')) || [];
+        let cart = JSON.parse(localStorage.getItem('tm_cart')) || [];
+        let wish = JSON.parse(localStorage.getItem('tm_wish')) || [];
 
         function init() {
-            renderGrid(products);
-            updateUI();
+            render(PRODUCTS);
+            update();
         }
 
-        function renderGrid(data) {
+        function render(data) {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = data.map(p => {
-                const isLiked = wishlist.some(x => x.id === p.id);
+                const isWished = wish.some(x => x.id === p.id);
                 return `
-                <div class="product-card fade-in">
-                    <div class="img-box rounded-sm">
-                        <img src="${p.img}" alt="${p.name}">
-                        <button onclick="toggleWish(${p.id})" class="absolute top-4 right-4 text-white drop-shadow-md hover:scale-125 transition">
-                            <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart ${isLiked ? 'text-red-500' : ''}"></i>
+                <div class="product-card group" onclick="addToCart(${p.id})">
+                    <div class="img-container">
+                        <img src="${p.img}">
+                        <button onclick="event.stopPropagation(); toggleWish(${p.id})" class="absolute top-4 right-4 text-white text-lg">
+                            <i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart ${isWished ? 'text-red-500' : ''}"></i>
                         </button>
-                        <button onclick="addToCart(${p.id})" class="absolute bottom-0 w-full bg-white/90 text-black py-3 text-[8px] font-bold uppercase tracking-[3px] opacity-0 translate-y-full hover:bg-black hover:text-white transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">Add To Bag</button>
+                        <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                            <span class="bg-white text-black px-6 py-2 text-[8px] font-bold uppercase tracking-widest">+ Quick Add</span>
+                        </div>
                     </div>
-                    <div class="mt-4 text-center group cursor-pointer" onclick="addToCart(${p.id})">
-                        <h4 class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">${p.name}</h4>
+                    <div class="mt-4 text-center">
+                        <h4 class="text-[9px] font-bold uppercase tracking-[3px] text-gray-400 mb-1">${p.name}</h4>
                         <b class="text-lg font-serif italic">$${p.price}</b>
                     </div>
                 </div>
             `}).join('');
         }
 
-        // --- CORE LOGIC ---
         function addToCart(id) {
-            const product = products.find(p => p.id === id);
+            const p = PRODUCTS.find(x => x.id === id);
             const exists = cart.find(x => x.id === id);
-            if(exists) exists.qty++;
-            else cart.push({...product, qty: 1});
-            
-            playSound('snd-cart');
-            updateUI();
-            saveData();
-            if(window.innerWidth > 768) toggleSidebar('cartSidebar', true);
+            if(exists) exists.qty++; else cart.push({...p, qty: 1});
+            document.getElementById('snd-cart').play();
+            update();
+            if(window.innerWidth > 768) toggleSidebar('cartPanel', true);
         }
 
         function toggleWish(id) {
-            const idx = wishlist.findIndex(x => x.id === id);
-            if(idx > -1) wishlist.splice(idx, 1);
-            else {
-                wishlist.push(products.find(p => p.id === id));
-                playSound('snd-click');
-            }
-            updateUI();
-            renderGrid(products);
-            saveData();
+            const idx = wish.findIndex(x => x.id === id);
+            if(idx > -1) wish.splice(idx,1);
+            else wish.push(PRODUCTS.find(p => p.id === id));
+            document.getElementById('snd-click').play();
+            update();
+            render(PRODUCTS);
         }
 
-        function updateUI() {
-            // Cart Counter
-            document.getElementById('cartCount').innerText = cart.reduce((a,b) => a + b.qty, 0);
-            document.getElementById('wishCount').innerText = wishlist.length;
+        function update() {
+            localStorage.setItem('tm_cart', JSON.stringify(cart));
+            localStorage.setItem('tm_wish', JSON.stringify(wish));
+            
+            document.getElementById('cartCount').innerText = cart.reduce((a,b) => a+b.qty, 0);
+            document.getElementById('wishCount').innerText = wish.length;
 
-            // Cart Items
-            const cartList = document.getElementById('cartItems');
+            const cartList = document.getElementById('cartList');
             cartList.innerHTML = cart.map((item, i) => `
-                <div class="flex gap-4 items-center animate-fade">
+                <div class="flex gap-6 items-center border-b border-gray-50 pb-6">
                     <img src="${item.img}" class="w-20 h-24 object-cover">
                     <div class="flex-1">
-                        <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
-                        <p class="font-serif italic text-sm">$${item.price}</p>
+                        <h5 class="text-[10px] font-bold uppercase tracking-widest">${item.name}</h5>
+                        <p class="font-serif italic">$${item.price}</p>
                         <div class="flex items-center gap-4 mt-2">
-                            <button onclick="updateQty(${i}, -1)" class="text-lg">–</button>
+                            <button onclick="qty(${i}, -1)">–</button>
                             <span class="text-xs font-bold">${item.qty}</span>
-                            <button onclick="updateQty(${i}, 1)" class="text-lg">+</button>
+                            <button onclick="qty(${i}, 1)">+</button>
                         </div>
                     </div>
-                    <button onclick="removeItem(${i})" class="text-gray-400">&times;</button>
+                    <button onclick="remove(${i})" class="text-gray-400">&times;</button>
                 </div>
             `).join('');
 
-            // Wishlist Items
-            const wishList = document.getElementById('wishlistItems');
-            wishList.innerHTML = wishlist.map((item, i) => `
+            const wishList = document.getElementById('wishList');
+            wishList.innerHTML = wish.map(item => `
                 <div class="flex gap-4 items-center">
-                    <img src="${item.img}" class="w-16 h-20 object-cover">
-                    <div class="flex-1">
-                        <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
-                        <button onclick="addToCart(${item.id})" class="text-[8px] font-bold underline uppercase tracking-widest mt-1">Move to Bag</button>
-                    </div>
-                    <button onclick="toggleWish(${item.id})" class="text-gray-400">&times;</button>
+                    <img src="${item.img}" class="w-16 h-16 object-cover rounded-full">
+                    <h5 class="flex-1 text-[9px] font-bold uppercase">${item.name}</h5>
+                    <button onclick="addToCart(${item.id})" class="text-xs uppercase font-bold underline">Add</button>
                 </div>
             `).join('');
 
             document.getElementById('cartTotal').innerText = "$" + cart.reduce((a,b) => a + (b.price * b.qty), 0);
         }
 
-        // --- UTILS ---
-        function updateQty(index, delta) {
-            cart[index].qty += delta;
-            if(cart[index].qty < 1) cart.splice(index, 1);
-            updateUI();
-            saveData();
-        }
-
-        function removeItem(index) {
-            cart.splice(index, 1);
-            updateUI();
-            saveData();
-        }
-
-        function toggleSidebar(id, forceOpen = null) {
+        function qty(i, d) { cart[i].qty += d; if(cart[i].qty < 1) cart.splice(i,1); update(); }
+        function remove(i) { cart.splice(i,1); update(); }
+        function toggleSidebar(id, open = null) {
             const el = document.getElementById(id);
-            if(forceOpen === true) el.classList.add('active');
+            if(open === true) el.classList.add('active');
             else el.classList.toggle('active');
         }
 
-        function filterCategory(cat) {
-            const filtered = cat === 'All' ? products : products.filter(p => p.category === cat);
-            renderGrid(filtered);
-        }
-
         function searchProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-            renderGrid(filtered);
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            render(PRODUCTS.filter(p => p.name.toLowerCase().includes(q)));
         }
 
-        function sortItems() {
-            const val = document.getElementById('priceSort').value;
-            let sorted = [...products];
-            if(val === 'low') sorted.sort((a,b) => a.price - b.price);
-            if(val === 'high') sorted.sort((a,b) => b.price - a.price);
-            renderGrid(sorted);
-        }
-
-        function playSound(id) {
-            const s = document.getElementById(id);
-            s.currentTime = 0; s.play();
-        }
-
-        function saveData() {
-            localStorage.setItem('oasis_cart', JSON.stringify(cart));
-            localStorage.setItem('oasis_wishlist', JSON.stringify(wishlist));
+        function filterCat(c) {
+            render(c === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.category === c));
         }
 
         function checkout() {
-            if(cart.length === 0) return alert("Archive is empty.");
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#000', '#c5a37d'] });
-            alert("Order Acquired. Your archive selection is being prepared.");
-            cart = [];
-            updateUI();
-            saveData();
-            toggleSidebar('cartSidebar');
+            if(!cart.length) return;
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#000', '#D4AF37'] });
+            alert("TENDER MART: Order placed in the vault.");
+            cart = []; update(); toggleSidebar('cartPanel');
         }
 
-        // Cursor Movement
         document.addEventListener('mousemove', e => {
-            const cursor = document.getElementById('cursor');
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            const c = document.getElementById('cursor'), f = document.getElementById('cursor-follower');
+            c.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            f.style.transform = `translate(${e.clientX - 11}px, ${e.clientY - 11}px)`;
         });
 
         init();
